@@ -1,5 +1,4 @@
 import cv2 as cv
-import matplotlib.pyplot as plt
 
 net = cv.dnn.readNetFromTensorflow("graph_opt.pb")
 
@@ -16,7 +15,16 @@ POSE_PAIRS = [ ["Neck", "RShoulder"], ["Neck", "LShoulder"], ["RShoulder", "RElb
                ["Neck", "RHip"], ["RHip", "RKnee"], ["RKnee", "RAnkle"], ["Neck", "LHip"],
                ["LHip", "LKnee"], ["LKnee", "LAnkle"], ["Neck", "Nose"]]
 
-def pose(frame):
+cam = cv.VideoCapture(0)
+
+cam.set(cv.CAP_PROP_FPS, 10)
+
+while cv.waitKey(1) < 0:
+    hasFrame, frame = cam.read()
+    if not hasFrame:
+        cv.waitKey()
+        break
+
     frameWidth = frame.shape[1]
     frameHeight = frame.shape[0]
     net.setInput(cv.dnn.blobFromImage(frame, 1.0, (inWidth, inHeight), (127.5, 127.5, 127.5), swapRB=True, crop=False))
@@ -50,16 +58,4 @@ def pose(frame):
             cv.ellipse(frame, points[num1], (3, 3), 0, 0, 360, (0, 0, 255), cv.FILLED)
             cv.ellipse(frame, points[num2], (3, 3), 0, 0, 360, (0, 0, 255), cv.FILLED)
 
-    return frame
-
-img = cv.imread("image.jpg")
-
-plt.subplot(2,1,1)
-plt.imshow(img)
-
-pose = pose(img)
-
-plt.subplot(2,1,2)
-plt.imshow(pose)
-
-plt.show()
+    cv.imshow('Pose estimation tutoriel', frame)

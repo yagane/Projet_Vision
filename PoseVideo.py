@@ -1,5 +1,4 @@
 import cv2 as cv
-import matplotlib.pyplot as plt
 
 net = cv.dnn.readNetFromTensorflow("graph_opt.pb")
 
@@ -18,11 +17,6 @@ POSE_PAIRS = [ ["Neck", "RShoulder"], ["Neck", "LShoulder"], ["RShoulder", "RElb
 
 video = cv.VideoCapture('2022-12-05_17-04-33.mp4')
 
-if not video.isOpened():
-    video = cv.VideoCapture(0)
-if not video.isOpened():
-    raise IOError('Cannot open video')
-
 while cv.waitKey(1) < 0:
     hasFrame, frame = video.read()
     if not hasFrame:
@@ -34,8 +28,6 @@ while cv.waitKey(1) < 0:
     net.setInput(cv.dnn.blobFromImage(frame, 1.0, (inWidth, inHeight), (127.5, 127.5, 127.5), swapRB=True, crop=False))
     out = net.forward()
     out = out[:, :15, :, :]
-
-    assert(len(BODY_PARTS) == out.shape[1])
 
     points = []
     for i in range(len(BODY_PARTS)):
@@ -53,17 +45,15 @@ while cv.waitKey(1) < 0:
 
     for pair in POSE_PAIRS:
         # On récupère les 2 parties du corps voulu
-        partFrom = pair[0]
-        partTo = pair[1]
-        assert (partFrom in BODY_PARTS)
-        assert (partTo in BODY_PARTS)
-        idFrom = BODY_PARTS[partFrom]
-        idTo = BODY_PARTS[partTo]
+        part1 = pair[0]
+        part2 = pair[1]
+        num1 = BODY_PARTS[part1]
+        num2 = BODY_PARTS[part2]
 
         # Si les deux parties sont dans points on dessine les points et on les relies à l'aide d'une ligne
-        if points[idFrom] and points[idTo]:
-            cv.line(frame, points[idFrom], points[idTo], (0, 255, 0), 3)
-            cv.ellipse(frame, points[idFrom], (3, 3), 0, 0, 360, (0, 0, 255), cv.FILLED)
-            cv.ellipse(frame, points[idTo], (3, 3), 0, 0, 360, (0, 0, 255), cv.FILLED)
+        if points[num1] and points[num2]:
+            cv.line(frame, points[num1], points[num2], (0, 255, 0), 3)
+            cv.ellipse(frame, points[num1], (3, 3), 0, 0, 360, (0, 0, 255), cv.FILLED)
+            cv.ellipse(frame, points[num2], (3, 3), 0, 0, 360, (0, 0, 255), cv.FILLED)
 
     cv.imshow('Pose estimation tutoriel', frame)
