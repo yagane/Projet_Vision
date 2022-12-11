@@ -23,23 +23,20 @@ def pose(frame):
     out = net.forward()
     out = out[:, :15, :, :]
 
-    x = []
-    y = []
     points = []
     for i in range(len(BODY_PARTS)):
+        # On récupère la heat map de la partie du corps voulu
         heatMap = out[0, i, :, :]
 
         _, conf, _, point = cv.minMaxLoc(heatMap)
 
-        x.append(50-point[0])
-        y.append(50-point[1])
+        plt.subplot(5,3,i+1)
+        plt.imshow(heatMap)
 
-    return x,y
+        print(point)
 
 img = cv.imread("image.jpg")
 
-x,y = pose(img)
-
-plt.plot(x,y,'.')
+heatMap = pose(img)
 
 plt.show()
